@@ -1,0 +1,185 @@
+//********************************* Constraints/Indexes ********************************************
+
+CREATE CONSTRAINT on (permitrec:PermitRecord) ASSERT permitrec.PermitRecordId IS UNIQUE;
+CREATE CONSTRAINT on (permittyp:PermitType) ASSERT permittyp.PermitTypeNum IS UNIQUE;
+CREATE CONSTRAINT on (buildprop:BuildingProperty) ASSERT buildprop.Location IS UNIQUE;
+CREATE CONSTRAINT on (planset:PlanSet) ASSERT planset.PlanSetNum is UNIQUE;
+CREATE CONSTRAINT on (sitepermit:SitePermit) ASSERT sitepermit.SitePermitCond is UNIQUE;
+CREATE CONSTRAINT on (firepermit:FirePermit) ASSERT firepermit.FirePermitCond is UNIQUE;
+CREATE CONSTRAINT on (retrofit:Retrofit) ASSERT retrofit.RetrofitCond is UNIQUE;
+CREATE CONSTRAINT on (tidfcomp:TidfComp) ASSERT tidfcomp.TidfCompCond is UNIQUE;
+
+
+//********************************* Nodes ********************************************
+
+//create premitrecord node
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+MERGE
+(permitrec:PermitRecord{PermitRecordId:row.RecordID})
+ON CREATE SET
+permitrec.PermitNumber = row.permit_number,
+permitrec.PermitCreationDate = row.permit_creation_dt,
+permitrec.CurrentStatus = row.cur_status,
+permitrec.CurrentStatusDate = row.cur_status_dt,
+permitrec.IssuedDate = row.issued_dt,
+permitrec.FiledDate = row.filed_dt,
+permitrec.CompletedDate = row.completed_dt,
+permitrec.FirstConstructionDocDate = row.first_const_doc_dt,
+permitrec.PermitExpirationDate = row.permit_exp_dt;
+
+
+
+//create permittyp node
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+MERGE
+(permittyp:PermitType{PermitTypeNum:row.permit_type})
+ON CREATE SET
+permittyp.PermitTypeDesc = row.permit_type_def;
+
+
+
+
+//create buildingproperty node
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+MERGE
+(buildprop:BuildingProperty{Location:row.location})
+ON CREATE SET 
+	buildprop.Block = row.Block,
+	buildprop.Lot = row.Lot,
+	buildprop.StreetNumber = row.street_num,
+	buildprop.StreetNumberSuffix = row.street_num_suffix,
+	buildprop.StreetName = row.street_name,
+	buildprop.Unit = row.Unit,
+	buildprop.UnitSuffix = row.unit_suffix,
+	buildprop.Description = row.Description,
+	buildprop.SupervisorDistrict = row.sup_dist,
+	buildprop.Neighbourhoods = row.neighborhoods,
+	buildprop.Zipcode = row.Zipcode,
+	buildprop.NoOfProposedStories = row.Zipcode,
+	buildprop.RevisedCost = row.rev_cost,
+	buildprop.ProposedUse = row.prop_use,
+	buildprop.ProposedUnits = row.prop_units,
+	buildprop.ProposedConstType = row.prop_const_type,
+	buildprop.ProposedConstTypeDesc = row.prop_const_type_descr,
+	buildprop.NoOfExistingStories = row.no_exist_stry,
+	buildprop.EstimatedCost = row.est_cost,
+	buildprop.ExistingUse = row.exist_use,
+	buildprop.ExistingUnits = row.exis_units,
+	buildprop.ExistingConstType = row.exist_const_type,
+	buildprop.ExistingConstTypeDesc = row.exist_const_type_descr;
+
+
+//create planset node
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+MERGE
+(planset:PlanSet{PlanSetNum:row.plansets});
+
+
+//create sitepermit node
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+MERGE
+(sitepermit:SitePermit{SitePermitCond:row.site_permit});
+
+
+
+//create firepermit node
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+MERGE
+(firepermit:FirePermit{FirePermitCond:row.fire_only_permit});
+
+
+
+//create retrofit node
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+MERGE
+(retrofit:Retrofit{RetrofitCond:row.vol_soft_story_ret});
+
+
+
+//create strucnotif node
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+MERGE
+(strucnotif:StrucNotif{StrucNotifCond:row.struct_notif});
+
+
+
+//create tidfcomp node
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+MERGE
+(tidfcomp:TidfComp{TidfCompCond:row.tidf_comp});
+
+
+//********************************* RelationShips ********************************************
+//Relationship between PermitRecord and PermitType
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+Match(permitrec:PermitRecord{PermitRecordId:row.RecordID})
+Match(permittyp:PermitType{PermitTypeNum:row.permit_type})
+MERGE(permitrec)-[:IS_OF]->(permittyp);
+
+
+//Relationship between PermitRecord and BuildingProp
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+	Match(permitrec:PermitRecord{PermitRecordId:row.RecordID})
+	Match(buildprop:BuildingProperty{Location:row.location})
+	MERGE(permitrec)-[:FOR]->(buildprop);
+
+
+//Relationship between PermitRecord and Planset
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+	Match(permitrec:PermitRecord{PermitRecordId:row.RecordID})
+	Match(planset:PlanSet{PlanSetNum:row.plansets})
+	MERGE(permitrec)-[:REPRESENTING]->(planset);
+
+
+//Relationship between PermitRecord and SitePermit
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+	Match(permitrec:PermitRecord{PermitRecordId:row.RecordID})
+	Match(sitepermit:SitePermit{SitePermitCond:row.site_permit})
+	MERGE(permitrec)-[:HAS]->(sitepermit);
+
+
+
+//Relationship between PermitRecord and FirePermit
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+	Match(permitrec:PermitRecord{PermitRecordId:row.RecordID})
+	Match(firepermit:FirePermit{FirePermitCond:row.fire_only_permit})
+	MERGE(permitrec)-[:HAS]->(firepermit);
+
+
+
+//Relationship between PermitRecord and Retrofit
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+	Match(permitrec:PermitRecord{PermitRecordId:row.RecordID})
+	Match(retrofit:Retrofit{RetrofitCond:row.vol_soft_story_ret})
+	MERGE(permitrec)-[:HAS]->(retrofit);
+
+
+//Relationship between PermitRecord and StructNotif
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+	Match(permitrec:PermitRecord{PermitRecordId:row.RecordID})
+	Match(strucnotif:StrucNotif{StrucNotifCond:row.struct_notif})
+	MERGE(permitrec)-[:HAS]->(strucnotif);
+
+
+//Relationship between PermitRecord and TIDFcompliance
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Users/maheswararaogunturi/MAHI_NEU/BigDataGovernance/Project/cleaned_data.csv' AS row
+	Match(permitrec:PermitRecord{PermitRecordId:row.RecordID})
+	Match(tidfcomp:TidfComp{TidfCompCond:row.tidf_comp})
+	MERGE(permitrec)-[:HAS]->(tidfcomp);
